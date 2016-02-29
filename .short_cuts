@@ -1,0 +1,4 @@
+alias ll='ls -l'
+alias lsd='ls -ld */'
+alias ox='/Users/akhileshkataria/tools/oxygenDeveloper/schemaDocumentationMac.sh'
+alias wx='/Users/akhileshkataria/tools/oxygenDeveloper/wsdlDocumentationMac.sh'
