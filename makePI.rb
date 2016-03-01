@@ -1,11 +1,15 @@
 require 'nokogiri'
+require 'fileutils'
 
 USERNAME = ARGV[0]
 PASSWORD = ARGV[1]
-PROJECT = ARGV[2]
+REPO = ARGV[2]
+PROJECT = ARGV[3]
+
 
 def zip(folder)
   cmd = "zip -r #{PROJECT}.zip #{folder}"
+  p cmd
   system cmd
 end
 
@@ -25,13 +29,15 @@ def get_references(repo, project)
     else
       get_project(repo, p.text)
     end
+    FileUtils.rm_r p.text
   end
 end
 
 
 def run
- get_project('iib3', PROJECT)
- get_references('iib3', PROJECT)
+ get_project(REPO, PROJECT)
+ get_references(REPO, PROJECT)
+ FileUtils.rm_r PROJECT
 end
 
 
