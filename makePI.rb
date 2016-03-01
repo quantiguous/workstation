@@ -6,6 +6,7 @@ PASSWORD = ARGV[1]
 REPO = ARGV[2]
 PROJECT = ARGV[3]
 
+FETCHED_PROJECTS = []
 
 def zip(folder)
   cmd = "zip -r #{PROJECT}.zip #{folder}"
@@ -14,10 +15,13 @@ def zip(folder)
 end
 
 def get_project(repo, project)
-  cmd =  "svn export https://github.com/quantiguous/#{repo}.git/trunk/#{project}/ --username #{USERNAME} --password #{PASSWORD} --force"
-  p cmd
-  system cmd
-  zip(project)
+  unless FETCHED_PROJECTS.include?(project)
+    cmd =  "svn export https://github.com/quantiguous/#{repo}.git/trunk/#{project}/ --username #{USERNAME} --password #{PASSWORD} --force"
+    p cmd
+    system cmd
+    FETCHED_PROJECTS << project
+  end
+  get_references(repo, project)
 end
 
 def get_references(repo, project)
@@ -27,17 +31,22 @@ def get_references(repo, project)
     if ['UDPManager'].include?(p.text)
       get_project('iib', p.text)
     else
-      get_project(repo, p.text)
+      if ['QManifest.lib'].include?(p.text)
+        get_project('iib3', p.text)
+      else
+        get_project(repo, p.text)
+      end
     end
-    FileUtils.rm_r p.text
   end
 end
 
 
 def run
  get_project(REPO, PROJECT)
- get_references(REPO, PROJECT)
- FileUtils.rm_r PROJECT
+ FETCHED_PROJECTS.each do |f|
+   zip(f)
+   FileUtils.rm_r f
+ end
 end
 
 
