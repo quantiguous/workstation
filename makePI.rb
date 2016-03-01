@@ -1,4 +1,4 @@
-require 'nokogiri'
+require 'rexml/document'
 require 'fileutils'
 
 USERNAME = ARGV[0]
@@ -21,8 +21,8 @@ def get_project(repo, project)
 end
 
 def get_references(repo, project)
-  doc = Nokogiri::XML(File.open("#{project}/.project"))
-  doc.xpath('/projectDescription/projects/project').each do |p|
+  doc = REXML::Document.new(File.read("#{project}/.project"))
+  doc.elements.each('/projectDescription/projects/project') do |p|
     p p.text
     if ['UDPManager'].include?(p.text)
       get_project('iib', p.text)
