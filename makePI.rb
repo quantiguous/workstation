@@ -28,7 +28,7 @@ def get_references(repo, project)
   doc = REXML::Document.new(File.read("#{project}/.project"))
   doc.elements.each('/projectDescription/projects/project') do |p|
     p p.text
-    if ['UDPManager'].include?(p.text)
+    if ['UDPManager','UDPManagerJava'].include?(p.text)
       get_project('iib', p.text)
     else
       if ['QManifest.lib'].include?(p.text)
