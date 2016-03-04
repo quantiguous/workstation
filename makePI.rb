@@ -1,12 +1,14 @@
 require 'rexml/document'
 require 'fileutils'
 
+MQSIPROFILE = '/opt/ibm/mqsi/9.0.0.2/bin/mqsiprofile'
 USERNAME = ARGV[0]
 PASSWORD = ARGV[1]
 REPO = ARGV[2]
 PROJECT = ARGV[3]
 
 FETCHED_PROJECTS = []
+
 
 def zip(folder)
   cmd = "zip -r #{PROJECT}.zip #{folder}"
@@ -41,13 +43,18 @@ def get_references(repo, project)
 end
 
 
+def createBarFile(project)
+  cmd = ". #{MQSIPROFILE};mqsicreatebar -data . -b #{project}.bar -a #{project} -deployAsSource"
+  system cmd
+end
+
 def run
  get_project(REPO, PROJECT)
+ createBarFile(PROJECT)
  FETCHED_PROJECTS.each do |f|
    zip(f)
    FileUtils.rm_r f
  end
 end
-
 
 run
