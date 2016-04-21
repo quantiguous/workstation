@@ -1,6 +1,8 @@
 require 'rexml/document'
 require 'fileutils'
 
+REPLACE_PATHS = { :ORACLE_HOME => '/opt/oracle/instantclient_11_2' }
+
 MQSIPROFILE = '/opt/ibm/mqsi/9.0.0.2/bin/mqsiprofile'
 USERNAME = ARGV[0]
 PASSWORD = ARGV[1]
@@ -42,6 +44,34 @@ def get_references(repo, project)
   end
 end
 
+def fix_class_paths
+ FETCHED_PROJECTS.each do |f|
+   classPath = "./#{f}/.classpath"
+   if File.file?(classPath) then
+     replaced = false
+     doc = REXML::Document.new(File.read(classPath))
+     doc.elements.each('/classpath/classpathentry') do |p|
+       REPLACE_PATHS.each { |k,v|
+         o = p.attributes['path']
+         r = o.sub("#{k}",v)
+         if r != o then
+           p.attributes['path'] = r
+           p.attributes['kind'] = 'lib'
+           p.attributes.delete 'exported'
+           replaced = true
+         end
+       }
+     end
+     if replaced then
+       FileUtils.cp(classPath, "#{classPath}.org")
+       outXml = ''
+       doc.write(outXml)
+       File.open(classPath, 'w') {|f| f.write(outXml) }
+     end
+   end
+ end
+end
+
 
 def createBarFile(project)
   cmd = ". #{MQSIPROFILE};mqsicreatebar -data . -b #{project}.bar -a #{project} -deployAsSource"
@@ -50,6 +80,7 @@ end
 
 def run
  get_project(REPO, PROJECT)
+ fix_class_paths
  createBarFile(PROJECT)
  FETCHED_PROJECTS.each do |f|
    zip(f)
